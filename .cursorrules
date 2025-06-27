@@ -1,0 +1,108 @@
+# Nstant Nfinity Photography Processing Application
+
+You are developing a professional-grade automated photo processing application for high-volume photographers.
+
+## Core Architecture
+- Frontend: React 18+ with TypeScript (strict mode), React Flow, Tailwind CSS, Framer Motion
+- Desktop: Tauri 2.0 (Rust) for native app
+- Backend: Python 3.13 with FastAPI, OpenCV, CuPy (GPU acceleration)
+- IPC: MessagePack for data, memory-mapped files for images
+- State: Zustand with persistence
+
+## Critical Principles
+
+### 1. Photography First
+- Every feature must help photographers spend less time processing
+- Understand photography workflows (wedding, portrait, sports, events)
+- Quality matters - no over-processed, artificial-looking results
+- Speed matters - professionals process thousands of images
+
+### 2. Performance Requirements
+- Process 100 RAW files (25MP) in <5 minutes
+- Preview generation <100ms
+- UI must maintain 60fps during all operations
+- Support images from 3MP to 100MP
+- Memory usage <8GB for processing queue
+
+### 3. Non-Negotiable Rules
+- NEVER modify original image files
+- NEVER send raw image data through IPC (only paths)
+- NEVER block the UI thread
+- ALWAYS handle errors gracefully with user-friendly messages
+- ALWAYS use async/await for file operations
+
+### 4. Code Standards
+- TypeScript with strict mode, no 'any' types
+- React functional components with hooks only
+- Python with type hints following PEP 8
+- Comprehensive error handling required
+- Tests required for new features (80% coverage minimum)
+
+## Development Workflow
+
+Follow the 5-phase workflow for EVERY feature:
+1. REVIEW - Understand requirements and existing code
+2. DESIGN - Create interfaces and get approval
+3. IMPLEMENTATION - Build incrementally with tests
+4. INTEGRATION - Connect to existing systems
+5. CHECKPOINT - Update documentation and verify performance
+
+## Architecture Patterns
+
+### Node System
+- Visual node-based workflow editor using React Flow
+- Nodes: Hot Folder → AI Analysis → Corrections → Export
+- Each node has auto mode (AI-driven) and manual controls
+- Support parallel and sequential processing
+
+### Processing Pipeline
+```python
+class BaseProcessor:
+    def estimate_memory(self, image_shape: Tuple[int, int, int]) -> int
+    def process_preview(self, image: np.ndarray) -> np.ndarray  # <100ms
+    def process_full(self, image: np.ndarray) -> np.ndarray
+```
+
+### Memory Management
+- Use tiled processing for large images (2048x2048 tiles, 128px overlap)
+- Dynamic chunk sizing based on available memory
+- Release resources immediately after use
+
+### UI Design
+- Glass morphism with smooth corners
+- Neon accents: blue (#00d4ff) and red (#ff3366)
+- All panels collapsible
+- Smooth animations (no sharp transitions)
+
+## File Structure
+```
+photo-processor/
+├── src/                 # React frontend
+├── src-tauri/          # Tauri backend
+├── python-backend/     # Python processing
+├── shared/             # Shared types
+├── benchmarks/         # Performance tests
+└── docs/               # Documentation
+```
+
+## Current Context
+Check PROJECT_STATE.md for:
+- Current sprint goals
+- Completed components
+- Known issues
+- Performance metrics
+
+## Communication Style
+- Be concise and technical
+- Report progress regularly
+- Ask for clarification when uncertain
+- Document decisions in code comments
+
+## Testing Requirements
+- Unit tests for all processors
+- Integration tests for full pipeline
+- Performance benchmarks must pass
+- Memory leak tests required
+
+## Remember
+This is a tool for professional photographers who need to process hundreds or thousands of images quickly with consistent quality. Every decision should support this goal.
