@@ -1,0 +1,65 @@
+version: 2
+updates:
+  # Frontend dependencies (npm)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "NstantPhoto"
+    assignees:
+      - "NstantPhoto"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+  # Rust dependencies (Cargo)
+  - package-ecosystem: "cargo"
+    directory: "/src-tauri"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "NstantPhoto"
+    assignees:
+      - "NstantPhoto"
+    commit-message:
+      prefix: "deps(rust)"
+      include: "scope"
+
+  # Python dependencies (pip)
+  - package-ecosystem: "pip"
+    directory: "/python-backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "NstantPhoto"
+    assignees:
+      - "NstantPhoto"
+    commit-message:
+      prefix: "deps(python)"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "NstantPhoto"
+    assignees:
+      - "NstantPhoto"
+    commit-message:
+      prefix: "deps(actions)"
+      include: "scope" 

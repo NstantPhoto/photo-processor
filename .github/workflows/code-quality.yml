@@ -1,0 +1,190 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  formatting:
+    name: Code Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+          
+      - name: Install frontend dependencies
+        run: npm ci
+        
+      - name: Install Prettier
+        run: npm install -g prettier
+        
+      - name: Check TypeScript/JavaScript formatting
+        run: |
+          prettier --check "src/**/*.{ts,tsx,js,jsx}" || {
+            echo "❌ Frontend code is not properly formatted"
+            echo "💡 Run 'npm run format' to fix formatting issues"
+            exit 1
+          }
+          
+      - name: Check Rust formatting
+        run: |
+          cd src-tauri
+          cargo fmt --all -- --check || {
+            echo "❌ Rust code is not properly formatted"
+            echo "💡 Run 'cargo fmt --all' to fix formatting issues"
+            exit 1
+          }
+          
+      - name: Check Python formatting (basic)
+        run: |
+          cd python-backend
+          python -m py_compile *.py processors/*.py || {
+            echo "❌ Python code has syntax errors"
+            exit 1
+          }
+
+  linting:
+    name: Code Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+          
+      - name: Install frontend dependencies
+        run: npm ci
+        
+      - name: Run TypeScript linting
+        run: |
+          npx tsc --noEmit || {
+            echo "❌ TypeScript compilation errors found"
+            exit 1
+          }
+          
+      - name: Run Rust linting (Clippy)
+        run: |
+          cd src-tauri
+          cargo clippy --all-targets --all-features -- -D warnings || {
+            echo "❌ Rust linting issues found"
+            echo "💡 Run 'cargo clippy --fix' to fix some issues automatically"
+            exit 1
+          }
+          
+      - name: Install Python linting tools
+        run: |
+          pip install flake8 mypy
+          
+      - name: Run Python linting
+        run: |
+          cd python-backend
+          flake8 --max-line-length=88 --extend-ignore=E203,W503 *.py processors/ || echo "⚠️ Python style warnings found"
+          pip install -r requirements.txt
+          mypy --ignore-missing-imports *.py || echo "⚠️ Python type hints warnings found"
+
+  documentation:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check for README updates
+        run: |
+          if [ ! -f README.md ]; then
+            echo "❌ README.md is missing"
+            exit 1
+          fi
+          
+          # Check if README has basic sections
+          if ! grep -q "# " README.md; then
+            echo "⚠️ README.md should have proper headings"
+          fi
+          
+      - name: Check for documentation files
+        run: |
+          required_docs=("PROJECT_STATE.md" "DEVELOPMENT_WORKFLOW.md" "HOT_FOLDER_TESTING.md")
+          for doc in "${required_docs[@]}"; do
+            if [ ! -f "$doc" ]; then
+              echo "⚠️ Missing documentation file: $doc"
+            else
+              echo "✅ Found documentation file: $doc"
+            fi
+          done
+          
+      - name: Check Rust documentation
+        if: always()
+        run: |
+          cd src-tauri
+          # Generate docs to check for documentation warnings
+          cargo doc --no-deps --quiet 2>&1 | tee doc_warnings.txt
+          if [ -s doc_warnings.txt ]; then
+            echo "⚠️ Rust documentation warnings found:"
+            cat doc_warnings.txt
+          else
+            echo "✅ Rust documentation looks good"
+          fi
+
+  performance-check:
+    name: Performance Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Check bundle size
+        run: |
+          npm run build
+          echo "📊 Frontend bundle analysis:"
+          du -sh dist/
+          
+          # Check if bundle is reasonable size (< 10MB)
+          bundle_size=$(du -sm dist/ | cut -f1)
+          if [ $bundle_size -gt 10 ]; then
+            echo "⚠️ Bundle size is quite large: ${bundle_size}MB"
+            echo "💡 Consider code splitting or removing unused dependencies"
+          else
+            echo "✅ Bundle size looks reasonable: ${bundle_size}MB"
+          fi
+          
+      - name: Analyze dependencies
+        run: |
+          echo "📦 Dependency analysis:"
+          npm ls --depth=0 --prod | head -20
+          
+          # Check for known heavy dependencies
+          if npm ls | grep -E "(moment|lodash)" > /dev/null; then
+            echo "⚠️ Consider lighter alternatives for date/utility libraries"
+          fi 
