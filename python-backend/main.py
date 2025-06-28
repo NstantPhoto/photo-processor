@@ -27,6 +27,7 @@ from processors import (
 )
 from processors.input_processor import InputProcessor, OutputProcessor
 from session_manager import SessionManager, SessionType
+from preview_manager import PreviewManager, PreviewRequest, PreviewResponse
 
 
 app = FastAPI(title="Nstant Nfinity Processing Engine", version="0.1.0")
@@ -243,6 +244,7 @@ class ProcessingResult(BaseModel):
 # Initialize managers
 pipeline_manager = PipelineManager()
 session_manager = SessionManager()
+preview_manager = PreviewManager()
 
 # Register processors
 pipeline_manager.register_processor('input', InputProcessor)
@@ -375,6 +377,40 @@ async def get_presets():
     """Get all presets"""
     presets = session_manager.list_presets()
     return [{"id": p.id, "name": p.name, "tags": p.tags} for p in presets]
+
+
+# Preview Generation Endpoints
+@app.post("/api/preview/generate", response_model=PreviewResponse)
+async def generate_preview(request: PreviewRequest):
+    """Generate a preview for an image"""
+    try:
+        response = await preview_manager.generate_preview(request)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/preview/thumbnail")
+async def generate_thumbnail(image_path: str, size: int = 150):
+    """Generate a thumbnail for an image"""
+    try:
+        thumbnail_path = await preview_manager.generate_thumbnail(image_path, size)
+        return {"thumbnail_path": thumbnail_path}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/preview/cache/stats")
+async def get_cache_stats():
+    """Get preview cache statistics"""
+    return preview_manager.get_cache_stats()
+
+
+@app.delete("/api/preview/cache")
+async def clear_preview_cache(older_than_days: Optional[int] = None):
+    """Clear preview cache"""
+    preview_manager.clear_cache(older_than_days)
+    return {"status": "cache cleared"}
 
 
 # Server-Sent Events for real-time updates

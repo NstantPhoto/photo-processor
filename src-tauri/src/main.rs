@@ -4,7 +4,7 @@ mod commands;
 mod hot_folder;
 mod pipeline;
 
-use commands::{get_image_info, process_image, check_backend_health};
+use commands::{get_image_info, process_image, check_backend_health, generate_preview, generate_thumbnail};
 use hot_folder::{start_hot_folder, stop_hot_folder, get_hot_folders, is_folder_watching, HotFolderManager};
 use pipeline::{execute_pipeline, get_pipeline_status, save_pipeline_preset, load_pipeline_preset, PipelineState};
 use std::sync::Arc;
@@ -38,7 +38,9 @@ fn main() {
             execute_pipeline,
             get_pipeline_status,
             save_pipeline_preset,
-            load_pipeline_preset
+            load_pipeline_preset,
+            generate_preview,
+            generate_thumbnail
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
