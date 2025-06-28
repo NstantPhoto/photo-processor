@@ -1,0 +1,169 @@
+/* Base node styles */
+.custom-node {
+  min-width: 200px;
+  background: rgba(25, 25, 25, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.custom-node.selected {
+  border-color: #00d4ff;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+}
+
+.custom-node.processing {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Node header */
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(35, 35, 35, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.node-title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Node content */
+.node-content {
+  padding: 12px 16px;
+}
+
+.node-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.info-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.info-value {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+/* Node type specific colors */
+.input-node {
+  border-top: 3px solid #00d4ff;
+}
+
+.input-node .node-header {
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.processor-node {
+  border-top: 3px solid #ff3366;
+}
+
+.processor-node .node-header {
+  background: rgba(255, 51, 102, 0.1);
+}
+
+.output-node {
+  border-top: 3px solid #00ff88;
+}
+
+.output-node .node-header {
+  background: rgba(0, 255, 136, 0.1);
+}
+
+/* Custom handles */
+.custom-handle {
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 2px solid rgba(20, 20, 20, 0.8);
+  transition: all 0.3s ease;
+}
+
+.custom-handle:hover {
+  width: 16px;
+  height: 16px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+}
+
+.source-handle {
+  background: #00d4ff;
+}
+
+.target-handle {
+  background: #ff3366;
+}
+
+/* Status icons */
+.status-icon {
+  transition: all 0.3s ease;
+}
+
+.status-icon.ready {
+  color: #00ff88;
+}
+
+.status-icon.error {
+  color: #ff3366;
+}
+
+/* Controls */
+.node-control {
+  margin-bottom: 8px;
+}
+
+.auto-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+}
+
+.auto-mode-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #00d4ff;
+}
+
+/* Progress bar */
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d4ff, #ff3366);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}

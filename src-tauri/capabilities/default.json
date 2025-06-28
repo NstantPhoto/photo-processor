@@ -6,16 +6,9 @@
   "permissions": [
     "core:default",
     "dialog:default",
-    "dialog:open",
     "fs:default",
     "fs:read-all",
     "fs:write-all",
-    "shell:default",
-    "event:default",
-    "window:default",
-    "app:default",
-    "resources:default",
-    "protocol:default",
-    "protocol:asset"
+    "shell:default"
   ]
 }

@@ -17,6 +17,16 @@ from queue_manager import (
     QueueStatus,
     QueueItemStatus
 )
+from pipeline import PipelineManager, ProcessingNode
+from processors import (
+    ExposureProcessor,
+    BrightnessProcessor,
+    ColorBalanceProcessor,
+    ContrastProcessor,
+    QualityAssessmentProcessor
+)
+from processors.input_processor import InputProcessor, OutputProcessor
+from session_manager import SessionManager, SessionType
 
 
 app = FastAPI(title="Nstant Nfinity Processing Engine", version="0.1.0")
@@ -194,6 +204,177 @@ async def clear_queue():
     """Clear all items from the queue"""
     await processing_queue.clear()
     return {"status": "cleared"}
+
+
+# Pipeline Execution Endpoints
+class PipelineNode(BaseModel):
+    id: str
+    node_type: str
+    processor_type: str
+    parameters: dict
+    position: tuple[float, float]
+
+
+class PipelineConnection(BaseModel):
+    source: str
+    target: str
+
+
+class PipelineConfig(BaseModel):
+    nodes: List[PipelineNode]
+    connections: List[PipelineConnection]
+
+
+class ProcessingRequestModel(BaseModel):
+    pipeline_config: PipelineConfig
+    input_path: str
+    output_path: str
+    session_id: Optional[str] = None
+
+
+class ProcessingResult(BaseModel):
+    success: bool
+    output_path: Optional[str] = None
+    processing_time: float
+    quality_score: Optional[float] = None
+    error: Optional[str] = None
+
+
+# Initialize managers
+pipeline_manager = PipelineManager()
+session_manager = SessionManager()
+
+# Register processors
+pipeline_manager.register_processor('input', InputProcessor)
+pipeline_manager.register_processor('output', OutputProcessor)
+pipeline_manager.register_processor('exposure', ExposureProcessor)
+pipeline_manager.register_processor('brightness', BrightnessProcessor)
+pipeline_manager.register_processor('color_balance', ColorBalanceProcessor)
+pipeline_manager.register_processor('contrast', ContrastProcessor)
+pipeline_manager.register_processor('quality_assessment', QualityAssessmentProcessor)
+
+
+@app.post("/api/pipeline/execute", response_model=ProcessingResult)
+async def execute_pipeline(request: ProcessingRequestModel):
+    """Execute a processing pipeline on an image"""
+    import time
+    start_time = time.time()
+    
+    try:
+        # Clear existing pipeline
+        pipeline_manager.nodes.clear()
+        pipeline_manager.graph.clear()
+        
+        # Build pipeline from config
+        processor_map = {}
+        
+        for node in request.pipeline_config.nodes:
+            if node.processor_type in pipeline_manager._processor_registry:
+                processor_class = pipeline_manager._processor_registry[node.processor_type]
+                processor = processor_class()
+                processor.set_parameters(**node.parameters)
+                
+                processing_node = ProcessingNode(
+                    id=node.id,
+                    processor=processor,
+                    position=node.position
+                )
+                
+                pipeline_manager.add_node(processing_node)
+                processor_map[node.id] = processing_node
+        
+        # Add connections
+        for conn in request.pipeline_config.connections:
+            pipeline_manager.connect_nodes(conn.source, conn.target)
+        
+        # Validate pipeline
+        is_valid, errors = pipeline_manager.validate_pipeline()
+        if not is_valid:
+            return ProcessingResult(
+                success=False,
+                error=f"Invalid pipeline: {', '.join(errors)}",
+                processing_time=0
+            )
+        
+        # Process image
+        input_path = Path(request.input_path)
+        output_path = Path(request.output_path)
+        
+        result = await pipeline_manager.process_image(
+            input_path,
+            output_path,
+            preview_only=False
+        )
+        
+        processing_time = time.time() - start_time
+        
+        # Get quality score if quality assessment was used
+        quality_score = None
+        for node in processor_map.values():
+            if node.processor.processor_type == 'quality_assessment':
+                metrics = node.processor.get_quality_metrics()
+                quality_score = metrics.get('score', 0)
+                break
+        
+        # Update session if provided
+        if request.session_id:
+            session_manager.mark_image_processed(
+                request.session_id,
+                str(input_path),
+                processing_time,
+                quality_score
+            )
+        
+        return ProcessingResult(
+            success=True,
+            output_path=str(output_path),
+            processing_time=processing_time,
+            quality_score=quality_score
+        )
+        
+    except Exception as e:
+        return ProcessingResult(
+            success=False,
+            error=str(e),
+            processing_time=time.time() - start_time
+        )
+
+
+# Session Management Endpoints
+@app.get("/api/sessions")
+async def get_sessions(status: Optional[str] = None, session_type: Optional[str] = None):
+    """Get all sessions"""
+    sessions = session_manager.list_sessions(status, SessionType(session_type) if session_type else None)
+    return [{"id": s.id, "name": s.name, "date": s.date.isoformat(), "type": s.type.value} for s in sessions]
+
+
+@app.post("/api/sessions")
+async def create_session(session_data: dict):
+    """Create a new session"""
+    session = session_manager.create_session(
+        name=session_data["name"],
+        session_type=SessionType(session_data["type"]),
+        **{k: v for k, v in session_data.items() if k not in ["name", "type"]}
+    )
+    return {"id": session.id}
+
+
+# Preset Management Endpoints
+@app.post("/api/presets/create")
+async def create_preset(preset_data: dict):
+    """Create a new processing preset"""
+    preset = session_manager.create_preset(
+        name=preset_data["name"],
+        pipeline_config=preset_data["pipeline_config"]
+    )
+    return {"id": preset.id}
+
+
+@app.get("/api/presets")
+async def get_presets():
+    """Get all presets"""
+    presets = session_manager.list_presets()
+    return [{"id": p.id, "name": p.name, "tags": p.tags} for p in presets]
 
 
 # Server-Sent Events for real-time updates

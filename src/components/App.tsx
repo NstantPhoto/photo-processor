@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
-import { ImageViewer } from './ImageViewer'
-import { HotFolderPanel } from './HotFolderPanel'
+import { NodeEditor } from './NodeEditor/NodeEditor'
 import { useImageStore } from '../stores/imageStore'
 import type { ImageInfo } from '../types/image'
 
@@ -88,13 +87,8 @@ function App() {
           <div className="mt-2 text-red-400 text-sm">{error}</div>
         )}
       </header>
-      <main className="flex-1 overflow-hidden flex">
-        <div className="flex-1">
-          <ImageViewer />
-        </div>
-        <div className="w-96 p-4 bg-gray-850 border-l border-gray-700">
-          <HotFolderPanel />
-        </div>
+      <main className="flex-1 overflow-hidden">
+        <NodeEditor />
       </main>
     </div>
   )

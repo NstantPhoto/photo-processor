@@ -1,4 +1,5 @@
 export interface ImageInfo {
+  id: string
   path: string
   width: number
   height: number

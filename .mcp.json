@@ -1,0 +1,63 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/@modelcontextprotocol/server-filesystem/dist/index.js", "/home/canon/projects/photo-processor"],
+      "env": {}
+    },
+    "github": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/@modelcontextprotocol/server-github/dist/index.js"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+      }
+    },
+    "memory": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/@modelcontextprotocol/server-memory/dist/index.js"],
+      "env": {}
+    },
+    "sequential-thinking": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"],
+      "env": {}
+    },
+    "magic": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/@21st-dev/magic/dist/index.js"],
+      "env": {}
+    },
+    "puppeteer": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/@modelcontextprotocol/server-puppeteer/dist/index.js"],
+      "env": {}
+    },
+    "brave-search": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js"],
+      "env": {
+        "BRAVE_API_KEY": "BSALsLwbLoX9xiWdw3LtTZd_PTM7MWm"
+      }
+    },
+    "context7": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/@upstash/context7-mcp/dist/index.js"],
+      "env": {
+        "UPSTASH_REDIS_REST_URL": "https://certain-polecat-34033.upstash.io",
+        "UPSTASH_REDIS_REST_TOKEN": "AYTxAAIjcDE3OTVkNjk4Mzg2MmI0MzY5OWU4ZjgyZjAxMzg1MzEyY3AxMA"
+      }
+    },
+    "exa": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/exa-mcp-server/dist/index.js"],
+      "env": {
+        "EXA_API_KEY": "dae87aac-a08a-4096-bb29-db1214e2c36f"
+      }
+    },
+    "taskmaster": {
+      "command": "node",
+      "args": ["/home/canon/.npm-global/lib/node_modules/@notbnull/mcp-cursor-taskmaster/dist/index.js", "--project-dir", "/home/canon/projects/photo-processor"],
+      "env": {}
+    }
+  }
+}

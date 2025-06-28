@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
-import { listen, type UnlistenFn } from '@tauri-apps/api/event'
+import { listen } from '@tauri-apps/api/event'
 import { useHotFolderStore } from '../stores/hotFolderStore'
 import type { HotFolderConfig, WatcherEvent, QueueStatus } from '../types/hotfolder'
 
@@ -15,12 +15,10 @@ export function HotFolderPanel() {
     queueStatus,
     isWatching,
     startWatching,
-    stopWatching,
     pauseQueue,
     resumeQueue,
   } = useHotFolderStore()
 
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isAddingFolder, setIsAddingFolder] = useState(false)
 
